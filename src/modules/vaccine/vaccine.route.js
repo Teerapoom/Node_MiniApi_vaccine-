@@ -10,6 +10,7 @@ router.use(function timeLog(req , res , next){
 })
 
 router.get("/", vaccineController.getVaccine)
+// router.get("/query",vaccineController.getVaccineByQuery)
 router.get("/:id",vaccineController.getVaccineById)
 router.post("/postData",vaccineController.createVaccine)
 router.put("/Update/:id",vaccineController.UpdateVaccine)

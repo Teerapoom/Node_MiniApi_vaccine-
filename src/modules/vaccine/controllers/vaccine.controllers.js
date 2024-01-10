@@ -1,4 +1,5 @@
 const humps = require("humps")
+const VaccineService = require("../services/vaccine.service")
 
 const vaccine = [
     {
@@ -29,64 +30,68 @@ const vaccine = [
 ]
 
 const vaccineController = {
-    getVaccine(req, res) {
-        const responsibility = req?.query?.responsibility || 0
-        const found = vaccine.filter((vaccine) => vaccine.responsibility >= +responsibility)
+    async getVaccine(req, res) {
+        const found = await VaccineService.getAll()
         res.json({
             suaccess: true,
             data: found
         }).status(200)
     },
+    // async getVaccineByQuery(){
+    //     const {quantity , quanlity} = humps.camelizeKeys(req.query)
+    //     const query = {
+    //         quanlity: quanlity ? { $gte: quanlity } : { $ne: null },
+    //         quantity: quantity || {$ne:null}
+    //     }
+    //     const found = await VaccineService.getAll(query)
+    //     res.json({
+    //         suaccess: true,
+    //         data: found
+    //     }).status(200)
+    // },
 
-    getVaccineById(req, res) {
+    async getVaccineById(req, res) {
         const { id } = req.params
-        const found = vaccine.find((vaccine) => vaccine.id === id)
+        const found = await VaccineService.getById(id)
         res.json({
             suaccess: true,
             data: found
         }).status(200)
     },
 
-    createVaccine(req, res) {
-        const { id, name, responsibility } = req.body
-        vaccine.push({ id, name, responsibility })
-
+    async createVaccine(req, res) {
+        const { name, quantity , quanlity} = humps.camelizeKeys(req.body)
+        const create = await VaccineService.create({name, quantity , quanlity })
         res.json({
             suaccess: true,
-            data: vaccine
+            data: create
         }).status(201)
     },
 
-    UpdateVaccine(req, res) {
+    async UpdateVaccine(req, res) {
         const { id } = req.params
-        const found = vaccine.find((vaccine) => vaccine.id === id) //เก็บ ก้อน data
-        if (!found) {
-            res.status(404).send("Vaccine not found")
+        const updateVaccine = await VaccineService.updateVaccine(id,req.body)
+        if(!updateVaccine){
+            return res.status(404).send("Vaccine not found");
         }
-        const { name, responsibility } = req.body // vaccine.name
-
-        found.name = name || found.name
-        found.responsibility = responsibility || found.responsibility
-
-        res.status(200).json(
-            {
-                suaccess: true,
-                data: vaccine
-            }
-        )
+        res.json({
+            suaccess: true,
+            data: updateVaccine
+        }).status(200)
     },
 
-    DeletetVaccine(req,res){
+    async DeletetVaccine(req,res){
         const {id} = req.params
-        const found = vaccine.find((vaccine) => vaccine.id === id)
+        const found = await VaccineService.deleteVaccine(id)
+        const viewAll = await VaccineService.getAll()
         if  (!found){
             res.status(404).send("Vaccine not found")
         }
-        const index = vaccine.indexOf(found) // หา index ของวัคซีนที่ต้องการลบในอาร์เรย์ vaccine
-        vaccine.splice(index,1) // ลบข้อมูลที่อยู่ที่ index ที่พบ
+        // const index = vaccine.indexOf(found) // หา index ของวัคซีนที่ต้องการลบในอาร์เรย์ vaccine
+        // vaccine.splice(index,1) // ลบข้อมูลที่อยู่ที่ index ที่พบ
         res.status(200).json({
             suaccess: true,
-            data: vaccine
+            data: viewAll
         })
     }
 
